@@ -1,6 +1,5 @@
-Collection of useful reusable helper classes and their corresponding unit tests.
-
+#### Collection of useful reusable helper classes and their corresponding unit tests.
 
 excel_writer =>     Wrapper Class for writing and appending data into excel files (currently supports only .xlsx)
+<br/>
 req_wrapper =>     Function that wraps an HTTP request with a layer of configurable validations.
-
