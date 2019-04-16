@@ -3,7 +3,7 @@ from openpyxl.styles import PatternFill, Border, Font, Side
 from openpyxl.styles.colors import YELLOW
 
 
-# v 0.1
+# v 0.0.1
 
 
 class ExcelWriter(object):
@@ -35,7 +35,12 @@ class ExcelWriter(object):
             for key in data_set.keys():
                 if key not in self.headers:
                     raise BadKey(key)
-        
+
+        # Take care of NoneType (generates problems with sorting)
+        for key in data_set:
+            if data_set[key] is None:
+                data_set[key] = 'None'
+
         self.data.append(data_set)
 
     def order_by(self, header_name):
