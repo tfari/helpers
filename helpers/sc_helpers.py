@@ -1,12 +1,12 @@
 from helpers.req_handler import GET, RequestData, RequestErrorData, RequestHandler
 
 
-# v 0.0.1
+# v 0.0.2
 
 
 """
-Soundcloud related helper functions. Some implement the Soundcloud API, others use selenium and other approaches to 
-get data (mostly identifiers) from Soundcloud.
+Soundcloud related helper functions. Most implement the Soundcloud API, one uses selenium  to 
+get client identifier from Soundcloud.
 """
 
 
@@ -87,29 +87,45 @@ def _resolve(resolve_url, client_id):
     :return: dict, the .json response to the resolve request
     """
     url = 'http://api.soundcloud.com/resolve?url=%s&client_id=%s' % (resolve_url, client_id)
+    # print(url)
     rh = RequestHandler([url], RequestData(GET), RequestErrorData(allow_errors=False))
     rh.run()
     response = rh.responses[0].json()
     return response
 
 
-def get_user_id(user_name, client_id):
+def _api_call(url, client_id, extra=None):
     """
-    Get user_id of user_name.
-
-    :param user_name: string, a valid user_name
-    :param client_id: string, a valid client_id
-    :return: string, user_id of user_name
     """
-    return _resolve('http://soundcloud.com/%s' % user_name, client_id)['id']
+    url += '?client_id=%s' % client_id
+    url += extra if extra else ''
+
+    # print(url)
+    rh = RequestHandler([url], RequestData(GET), RequestErrorData(allow_errors=False))
+    rh.run()
+    response = rh.responses[0].json()
+    return response
 
 
-def get_track_id(track_url, client_id):
+def get_user_data(user_name, client_id):
     """
-    Get track_id from track_url
-
-    :param track_url: string, a valid track's url
-    :param client_id: string, a valid client_id
-    :return: string, track_id from track_url
+    Raises non-existing user
+    # TODO: ^
+    :param user_name:
+    :param client_id:
+    :return: The user data of user_name
     """
-    return _resolve(track_url, client_id)['id']
+    return _resolve(('http://soundcloud.com/%s' % user_name), client_id)
+
+
+def get_all_playlists_data(user_id, client_id):
+    """
+    :param user_id:
+    :param client_id:
+    :return: Playlists for user_name
+    """
+    return _api_call('http://api.soundcloud.com/users/%s/playlists' % user_id, client_id, '&limit=9999999')
+
+
+def get_all_tracks_data(user_id, client_id):
+    return _api_call('http://api.soundcloud.com/users/%s/tracks' % user_id, client_id, '&limit=9999999')
