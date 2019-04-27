@@ -6,4 +6,11 @@ req_handler =>  Collection of classes for wrapping requests operations such as b
 <br/>
 sc_helpers =>   Soundcloud related helper functions.
 <br/>
+bc_helpers => Bandcamp related helper functions.
+<br>
 file_getter =>  Implements a simple download bar for file downloads.
+<br/>
+input_wrapper =>  Wrapper for input() to enforce user chooses out of a predetermined list of options
+<br/>
+tk_notify => Tk-based graphical notification system
+
