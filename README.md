@@ -14,5 +14,5 @@ input_wrapper =>  Wrapper for input() to enforce user chooses out of a predeterm
 <br/>
 tk_notify => Tk-based graphical notification system
 <br/>
-API Wrapper for downloading (and playing) text-to-speech results out of Voice RSS Api.
+tts_reader => API Wrapper for downloading (and playing) text-to-speech results out of Voice RSS Api.
 
