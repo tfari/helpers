@@ -13,4 +13,6 @@ file_getter =>  Implements a simple download bar for file downloads.
 input_wrapper =>  Wrapper for input() to enforce user chooses out of a predetermined list of options
 <br/>
 tk_notify => Tk-based graphical notification system
+<br/>
+API Wrapper for downloading (and playing) text-to-speech results out of Voice RSS Api.
 
