@@ -1,3 +1,4 @@
+import openpyxl
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Font, Side
 from openpyxl.styles.colors import YELLOW
@@ -154,10 +155,14 @@ class ExcelWriter(object):
         # Puts all data in self.data
         for data_set in self.data:
             for i in range(0, len(self.headers)):
-                cell = worksheet.cell(row, i+1)
-                cell.value = data_set[self.headers[i]]
-                side_cell = Side(border_style='thin')
-                cell.border = Border(left=side_cell, right=side_cell, top=side_cell, bottom=side_cell)
+                try:
+                    cell = worksheet.cell(row, i+1)
+                    cell.value = data_set[self.headers[i]]
+                    side_cell = Side(border_style='thin')
+                    cell.border = Border(left=side_cell, right=side_cell, top=side_cell, bottom=side_cell)
+                except openpyxl.utils.exceptions.IllegalCharacterError:
+                    print("Illegal character error for header %s:  %s" % (self.headers[i], data_set[self.headers[i]]))
+
             row += 1
 
         # Cleans self.data
