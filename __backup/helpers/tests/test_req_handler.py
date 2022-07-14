@@ -1,5 +1,5 @@
 from unittest import TestCase
-from helpers.req_handler import GET, VALID_METHODS, RequestData, RequestErrorData, RequestHandler, \
+from backup.helpers.helpers.req_handler import GET, VALID_METHODS, RequestData, RequestErrorData, RequestHandler, \
     ThreadedRequestHandler, InvalidMethod, InvalidURL, ConnectivityError, InvalidStatusCode, NoValidationString, \
     ContainsErrorString
 

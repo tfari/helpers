@@ -1,4 +1,4 @@
-from helpers.req_handler import GET, RequestData, RequestErrorData, RequestHandler
+from backup.helpers.helpers.req_handler import GET, RequestData, RequestErrorData, RequestHandler
 
 
 # v 0.0.2
