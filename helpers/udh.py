@@ -120,6 +120,10 @@ class UniqueDictHandler(object):
         """ Get the amount of repeated elements """
         return len(self.repeated_elements)
 
+    def clear(self) -> None:
+        """ Clear the contents"""
+        self.elements.clear()
+
     def json_read(self, *, filepath: str = '') -> None:
         """
         Read elements from JSON
