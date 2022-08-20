@@ -129,6 +129,12 @@ class TestUniqueDictHandler(TestCase):
         udh['a'], udh['a'], udh['a'], udh['b'], udh['b'], udh['c'] = 1, 2, 3, 4, 5, 6
         self.assertEqual(2, udh.len_repeated())
 
+    def test_clear(self):
+        udh = UniqueDictHandler(data_type=int)
+        udh['a'] = 1
+        udh.clear()
+        self.assertEqual([], list(udh.keys()))
+
     def test_json_read(self):
         udh = UniqueDictHandler(filepath='json_test')
         with open('json_test', 'w', encoding='utf-8') as w_file:
