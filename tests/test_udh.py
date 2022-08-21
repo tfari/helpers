@@ -32,17 +32,11 @@ class TestUniqueDictHandler(TestCase):
     def test__setitem__(self):
         udh = UniqueDictHandler(data_type=int)
         udh['a'] = 1
-        self.assertEqual(1, udh.elements['a'])
+        self.assertEqual(1, udh['a'])
 
     def test__setitem__raises_InvalidValue_on_wrong_item_type(self):
         udh = UniqueDictHandler()
         self.assertRaises(UniqueDictHandler.InvalidValue, udh.__setitem__, 'a', 1)
-
-    @mock.patch.object(UniqueDictHandler, "_add_repeated")
-    def test__setitem__calls___add_repeated_on_repetition(self, mocked_fun):
-        udh = UniqueDictHandler(data_type=int)
-        udh['a'], udh['a'] = 1, 2
-        mocked_fun.assert_called()
 
     def test__setitem__raises_RepetitionHappened_on_BREAK_on_repetition_action(self):
         udh = UniqueDictHandler(on_repetition_action=BREAK, data_type=int)
@@ -112,10 +106,10 @@ class TestUniqueDictHandler(TestCase):
     def test__add_repeated(self):
         udh = UniqueDictHandler(data_type=int)
         udh['a'] = 0
-        udh._add_repeated('a', 1)
+        udh['a'] = 1  # Cannot test directly as it is a private method
         self.assertEqual({'a': [0, 1]}, udh.get_repeated())
-        udh._add_repeated('a', 2)
-        udh._add_repeated('a', 3)
+        udh['a'] = 2
+        udh['a'] = 3
         self.assertEqual({'a': [0, 1, 2, 3]}, udh.get_repeated())
 
     def test_get_repeated(self):

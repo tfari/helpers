@@ -33,7 +33,7 @@ class UniqueDictHandler(object):
     use as row values.
 
     """
-    def __init__(self, filepath: str = '', *, on_repetition_action: str = IGNORE, data_type=dict):
+    def __init__(self, filepath: str = '', *, on_repetition_action: str = IGNORE, data_type: type = dict):
         """
         :param filepath: Path to use for json reading/writing
         :param on_repetition_action: How to handle repeated keys: "ignore", "notify": print a message,
@@ -51,79 +51,104 @@ class UniqueDictHandler(object):
         self.data_type = data_type
 
         self.lock = Lock()
-        self.repeated_elements: dict[str, list] = {}
-        self.elements: dict[str, object] = {}
+        self.__repeated_elements: dict[str, list] = {}
+        self.__elements: dict[str, object] = {}
 
+    @staticmethod
+    def locked(m):
+        """ Decorator to lock all public interface.
+        Be careful to not use public interface calls within method's implementations, as it will never return. """
+        def wrapper(self, *args, **kwargs):
+            """ Call method within self.lock's context """
+            with self.lock:
+                return m(self, *args, **kwargs)
+        return wrapper
+
+    @locked
     def __setitem__(self, key, item):
-        with self.lock:
-            if type(item) != self.data_type:
-                raise UniqueDictHandler.InvalidValue(f'Expected: {self.data_type}, got: {type(item)} -> {repr(item)}')
+        if type(item) != self.data_type:
+            raise UniqueDictHandler.InvalidValue(f'Expected: {self.data_type}, got: {type(item)} -> {repr(item)}')
 
-            if self.elements.get(key):
-                repeated_msg = f'Repeated key: "{key}", new item: {item}, old item: {self.elements.get(key)}'
-                self._add_repeated(key, item)
-                if self.on_repetition_action is BREAK:
-                    raise UniqueDictHandler.RepetitionHappened(repeated_msg)
-                elif self.on_repetition_action is NOTIFY:
-                    print(f'<UniqueDictHandler> {repeated_msg}')
-            else:
-                self.elements[key] = item
+        if self.__elements.get(key) is not None:
+            repeated_msg = f'Repeated key: "{key}", new item: {item}, old item: {self.__elements.get(key)}'
+            self.__add_repeated(key, item)
+            if self.on_repetition_action is BREAK:
+                raise UniqueDictHandler.RepetitionHappened(repeated_msg)
+            elif self.on_repetition_action is NOTIFY:
+                print(f'<UniqueDictHandler> {repeated_msg}')
+        else:
+            self.__elements[key] = item
 
-    def __getitem__(self, key):
-        return self.elements[key]
-
-    def __repr__(self):
-        return f'<UniqueDictHandler> Repeated count: {self.len_repeated()}\n{repr(self.elements)}'
-
-    def __len__(self):
-        return len(self.elements)
-
-    def __delitem__(self, key):
-        del self.elements[key]
-
-    def keys(self):
-        """ Get keys """
-        return self.elements.keys()
-
-    def values(self):
-        """ Get values """
-        return self.elements.values()
-
-    def items(self):
-        """ Get items """
-        return self.elements.items()
-
-    def pop(self, *args):
-        """ Pop """
-        return self.elements.pop(*args)
-
-    def __contains__(self, item):
-        return item in self.elements
-
-    def __iter__(self):
-        return iter(list(self.elements.values()))
-
-    def _add_repeated(self, key, item) -> None:
+    def __add_repeated(self, key, item) -> None:
         """ Add a new item to the repeated_elements dict.
         If it is the first repetition assign it a list with the first
         element being the already existing one in elements dict. """
-        if self.repeated_elements.get(key):
-            self.repeated_elements[key].append(item)
+        if self.__repeated_elements.get(key) is not None:
+            self.__repeated_elements[key].append(item)
         else:
-            self.repeated_elements[key] = [self.elements.get(key), item]
+            self.__repeated_elements[key] = [self.__elements.get(key), item]
 
+    @locked
+    def __getitem__(self, key):
+        return self.__elements[key]
+
+    @locked
+    def __repr__(self):
+        return f'<UniqueDictHandler> Repeated count: {len(self.__repeated_elements)}\n{repr(self.__elements)}'
+
+    @locked
+    def __len__(self):
+        return len(self.__elements)
+
+    @locked
+    def __delitem__(self, key):
+        del self.__elements[key]
+
+    @locked
+    def keys(self):
+        """ Get keys """
+        return self.__elements.keys()
+
+    @locked
+    def values(self):
+        """ Get values """
+        return self.__elements.values()
+
+    @locked
+    def items(self):
+        """ Get items """
+        return self.__elements.items()
+
+    @locked
+    def pop(self, *args):
+        """ Pop """
+        return self.__elements.pop(*args)
+
+    @locked
+    def __contains__(self, item):
+        return item in self.__elements
+
+    @locked
+    def __iter__(self):
+        return iter(list(self.__elements.values()))
+
+    @locked
     def get_repeated(self) -> dict:
         """ Get the repeated elements """
-        return self.repeated_elements
+        return self.__repeated_elements
 
+    @locked
     def len_repeated(self) -> int:
         """ Get the amount of repeated elements """
-        return len(self.repeated_elements)
+        return len(self.__repeated_elements)
 
+    @locked
     def clear(self) -> None:
-        """ Clear the contents"""
-        self.elements.clear()
+        """ Clear the contents and the repetitions. """
+        self.__elements.clear()
+        self.__repeated_elements.clear()
 
+    @locked
     def json_read(self, *, filepath: str = '') -> None:
         """
         Read elements from JSON
@@ -133,10 +158,11 @@ class UniqueDictHandler(object):
             json_from_file = json.load(rf)
         for key, value in json_from_file.items():
             if self.data_type is dict:
-                self[key] = value
+                self.__elements[key] = value
             else:
-                self[key] = self.data_type(**value)
+                self.__elements[key] = self.data_type(**value)
 
+    @locked
     def json_write(self, *, filepath: str = '') -> None:
         """
         Write elements to JSON
@@ -144,11 +170,12 @@ class UniqueDictHandler(object):
         """
         with open(filepath if filepath else self.filepath, 'w', encoding='utf-8') as wf:
             if self.data_type is dict:
-                elements = self.elements
+                elements = self.__elements
             else:
-                elements = {k: self[k].__dict__ for k in self.keys()}
+                elements = {k: self.__elements[k].__dict__ for k in self.__elements.keys()}
             json.dump(elements, wf, indent=4)
 
+    @locked
     def csv_output(self, csv_filepath, headers: tuple, *, key_order: tuple = ('',),
                    row_fun: Callable = None) -> None:
         """
@@ -171,7 +198,8 @@ class UniqueDictHandler(object):
             csv_writer = csv.writer(wf, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
             csv_writer.writerow(headers)
 
-            for element in self:
+
+            for element in self.__elements.values():
                 if row_fun:
                     row = row_fun(element)
                 else:
