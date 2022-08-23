@@ -198,7 +198,6 @@ class UniqueDictHandler(object):
             csv_writer = csv.writer(wf, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
             csv_writer.writerow(headers)
 
-
             for element in self.__elements.values():
                 if row_fun:
                     row = row_fun(element)
