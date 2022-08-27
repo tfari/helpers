@@ -12,7 +12,7 @@ IGNORE, NOTIFY, BREAK = 'ignore', 'notify', 'break'
 
 class UniqueDictHandler(object):
     """
-    Thread-locked dictionary handler that does not allow, and records, repeated key assignations.
+    Thread-locked dictionary handler that does not allow, and records, repeated key assignments.
     Implements all dict functionality, except that iterates over items, instead of keys.
 
     Repetitions are saved, and the behaviour on repetitions can be one of the following, set via the
