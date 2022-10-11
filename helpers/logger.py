@@ -10,6 +10,12 @@ class Logger:
         - In the case of errors, allows to pass in a flag to call sys.exit(1) after logging the error.
     """
     def __init__(self, name: str, *, path: str = '', debug_active: bool = False):
+        """
+        :param name: logger name and filename
+        :param path: logger path. Defaults to current directory
+        :param debug_active: if debug statements are active. Defaults to false
+        :raises FileNotFoundError: if path is invalid
+        """
         self._logger_name = name
         self._logger_path = path
         self._debug_active = debug_active
@@ -39,7 +45,10 @@ class Logger:
             self._logger.warning(err_msg)
 
     def __logger_setup(self) -> logging.Logger:
-        """ Setup a StreamHandler and FileHandler logger. """
+        """
+        Setup a StreamHandler and FileHandler logger.
+        :raises FileNotFoundError: if path is invalid
+        """
         logger = logging.getLogger(self._logger_name)
         path = f'{self._logger_path}/{self._logger_name}.log' if self._logger_path else f'{self._logger_name}.log'
 
