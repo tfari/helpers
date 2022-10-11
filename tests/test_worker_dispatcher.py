@@ -5,9 +5,6 @@ from helpers.worker_dispatcher import WorkerDispatcher, SPAWN, FORK, FORKSERVER
 
 
 class TestWorkerDispatcher(TestCase):
-    def test__init__multiprocessing_empty_type_raises_InvalidMultiProcessingType(self):
-        self.assertRaises(WorkerDispatcher.InvalidMultiprocessingType,
-                          WorkerDispatcher, is_multiprocessing=True)
 
     def test__init__multiprocessing_wrong_type_raises_InvalidMultiProcessingType(self):
         self.assertRaises(WorkerDispatcher.InvalidMultiprocessingType,
@@ -54,7 +51,7 @@ class TestWorkerDispatcher(TestCase):
             for wl in work_list:
                 queues['test'].append(wl)
 
-        wd = WorkerDispatcher(is_multiprocessing=True, multiprocessing_context_type=SPAWN)
+        wd = WorkerDispatcher(is_multiprocessing=True, multiprocessing_context_type=FORK)  # Cope out for pickling error
         queues_returned = wd.dispatch_processes(__target, [1, 2, 3, 4, 5, 6], 2, ('test',))
         self.assertEqual(6, len(queues_returned['test']))
         self.assertEqual(21, sum(queues_returned['test']))

@@ -9,6 +9,8 @@ class WorkerDispatcher:
     """
     Thread or multiprocessing worker dispatcher.
         - FORK and FORKSERVER multiprocessing context types only work on Unix
+        - Pickling considerations when using SPAWN:
+                https://docs.python.org/3/library/pickle.html#what-can-be-pickled-and-unpickled
     """
     VALID_MP_TYPES = [SPAWN, FORK, FORKSERVER]
 
@@ -18,15 +20,15 @@ class WorkerDispatcher:
         :param multiprocessing_context_type:
         :raises InvalidMultiprocessingType: if multiprocessing_type is not one of SPAWN, FORK, FORKSERVER
         """
-        self.is_multiprocessing = is_multiprocessing
-        self.multiprocessing_type = multiprocessing_context_type
+        self.__is_multiprocessing = is_multiprocessing
+        self.__multiprocessing_type = multiprocessing_context_type
         self.__mp_context = None
 
-        if self.is_multiprocessing:
-            if self.multiprocessing_type in WorkerDispatcher.VALID_MP_TYPES:
-                self.__mp_context = multiprocessing.get_context(self.multiprocessing_type)
+        if self.__is_multiprocessing and self.__multiprocessing_type:
+            if self.__multiprocessing_type in WorkerDispatcher.VALID_MP_TYPES:
+                self.__mp_context = multiprocessing.get_context(self.__multiprocessing_type)
             else:
-                raise self.InvalidMultiprocessingType(self.multiprocessing_type)
+                raise self.InvalidMultiprocessingType(self.__multiprocessing_type)
 
     def stub_target_threading_worker(self, work_list: list, *args) -> None:
         """ Stub for target threading workers """
@@ -48,7 +50,7 @@ class WorkerDispatcher:
         :param common_args: any extra common arguments that might be required
         :raises WorkerDispatcherSetForMultiprocessing: if WorkerDispatcher was set to use multiprocessing
         """
-        if self.is_multiprocessing:
+        if self.__is_multiprocessing:
             raise self.WorkerDispatcherSetForMultiprocessing()
 
         # Don't use more threads than there are work_list
@@ -82,7 +84,7 @@ class WorkerDispatcher:
         :raises WorkerDispatcherSetForThreading: if WorkerDispatcher was set to use threading
         :return: a dictionary of {queue_name: Queue} holding the results produced by the process targets
         """
-        if not self.is_multiprocessing:
+        if not self.__is_multiprocessing:
             raise self.WorkerDispatcherSetForThreading()
         queues = {q: multiprocessing.Manager().list() for q in queue_names}  # Make queues
 
@@ -96,7 +98,7 @@ class WorkerDispatcher:
         # Fill in the processes
         processes = []
         for i in range(len(k_lists)):
-            processes.append(multiprocessing.Process(target=target, args=(k_lists[i], queues, *common_args)))
+            processes.append(self.__mp_context.Process(target=target, args=(k_lists[i], queues, *common_args)))
 
         # Run the threads
         [process.start() for process in processes]
