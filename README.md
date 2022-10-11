@@ -9,3 +9,5 @@ Collection of useful reusable helper classes / functions
 * [Logger](helpers/logger.py): Wrapper for stream and file handling Logger. In case of fatal errors call **sys.
   exit(1)** and exit process. [TESTS](tests/test_logger.py)
 
+* [WorkerDispatcher](helpers/worker_dispatcher.py): Threading / multiprocessing worker dispatcher.
+  [TESTS](tests/test_worker_dispatcher.py)
