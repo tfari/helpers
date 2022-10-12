@@ -1,4 +1,4 @@
-""" Logger wrapper with fatal error functionality and stream and file handlers """
+""" Logger wrapper with "fatal error" functionality and stream / file handlers """
 import sys
 import logging
 from typing import Union
