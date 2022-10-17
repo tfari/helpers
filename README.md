@@ -11,3 +11,6 @@ Collection of useful reusable helper classes / functions
 
 * [WorkerDispatcher](helpers/worker_dispatcher.py): Threading / multiprocessing worker dispatcher.
   [TESTS](tests/test_worker_dispatcher.py)
+
+* [Notifier](helpers/notifier.py): Simple notification system using either [notify-send](https://vaskovsky.net/notify-send/) 
+  or Tk. [TESTS](tests/test_notifier.py)
