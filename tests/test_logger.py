@@ -47,28 +47,59 @@ class TestLogger(TestCase):
         with open('test.log', 'r', encoding='utf-8') as r_file:
             self.assertEqual('DEBUG - abc', r_file.read().split('\n')[0].split('test - ')[1])
 
-    def test_err_non_fatal(self):
+    def test_warn(self):
         logger = Logger('test')
-        logger.err('abc')
+        logger.warn('abc')
         with open('test.log', 'r', encoding='utf-8') as r_file:
             self.assertEqual('WARNING - abc', r_file.read().split('\n')[0].split('test - ')[1])
 
-    def test_err_w_exception(self):
+    def test_warn_w_exception(self):
         logger = Logger('test')
         try:
             a = []
             b = a[1]
         except IndexError as e:
-            logger.err(e)
+            logger.warn(e)
 
         with open('test.log', 'r', encoding='utf-8') as r_file:
             self.assertEqual('WARNING - IndexError: list index out of range',
                              r_file.read().split('\n')[0].split('test - ')[1])
 
     @mock.patch("sys.exit")
+    def test_err__init__w_false_use_fatal(self, mocked_fun):
+        logger = Logger('test', use_fatal=False)
+        logger.err('abc')
+        with open('test.log', 'r', encoding='utf-8') as r_file:
+            self.assertEqual('ERROR - abc', r_file.read().split('\n')[0].split('test - ')[1])
+
+        mocked_fun.assert_not_called()
+
+    @mock.patch("sys.exit")
+    def test_err_non_fatal_str(self, mocked_fun):
+        logger = Logger('test')
+        logger.err('abc', non_fatal=True)
+        with open('test.log', 'r', encoding='utf-8') as r_file:
+            self.assertEqual('ERROR - abc', r_file.read().split('\n')[0].split('test - ')[1])
+        mocked_fun.assert_not_called()
+
+    @mock.patch("sys.exit")
+    def test_err_non_fatal_w_exception(self, mocked_fun):
+        logger = Logger('test')
+        try:
+            a = []
+            b = a[1]
+        except IndexError as e:
+            logger.err(e, non_fatal=True)
+
+        with open('test.log', 'r', encoding='utf-8') as r_file:
+            self.assertEqual('ERROR - IndexError: list index out of range',
+                             r_file.read().split('\n')[0].split('test - ')[1])
+        mocked_fun.assert_not_called()
+
+    @mock.patch("sys.exit")
     def test_fatal_err(self, mocked_fun):
         logger = Logger('test')
-        logger.err('abc', fatal=True)
+        logger.err('abc')
 
         mocked_fun.assert_called_with(1)  # sys.exit(1) was called
 

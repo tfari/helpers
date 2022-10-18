@@ -7,18 +7,20 @@ class Logger:
     """
     Stream/File logger wrapper.
         - Logger format is: [time] - [logger_name] - [log level] - [message]
-        - In the case of errors, allows to pass in a flag to call sys.exit(1) after logging the error.
+        - In the case of errors calls sys.exit(1) after logging the error by default.
     """
-    def __init__(self, name: str, *, path: str = '', debug_active: bool = False):
+    def __init__(self, name: str, *, path: str = '', debug_active: bool = False, use_fatal: bool = True):
         """
         :param name: logger name and filename
         :param path: logger path. Defaults to current directory
         :param debug_active: if debug statements are active. Defaults to false
+        :param use_fatal: if error logs should exit the script. Defaults to true
         :raises FileNotFoundError: if path is invalid
         """
         self._logger_name = name
         self._logger_path = path
         self._debug_active = debug_active
+        self._use_fatal = use_fatal
 
         self._logger = self.__logger_setup()
 
@@ -30,19 +32,26 @@ class Logger:
         """ Log debug message """
         self._logger.debug(msg)
 
-    def err(self, err_msg: Union[str, Exception], *,  fatal: bool = False) -> None:
+    def warn(self, warn_msg: Union[str, Exception]) -> None:
         """
-        Log an error or warning message. If it is an error call sys.exit(1)
+        Log warning message
+        :param warn_msg: str or Exception to log. If it is an exception, log its name and argument.
+        """
+        warn_msg = warn_msg if isinstance(warn_msg, str) else f'{warn_msg.__class__.__name__}: {warn_msg}'
+        self._logger.warning(warn_msg)
 
-        :param err_msg: str or exception to log. If it is an exception, log its name and argument.
-        :param fatal: bool, default False. If true, log as error and then call sys.exit(1)
+    def err(self, err_msg: Union[str, Exception], *,  non_fatal: bool = False) -> None:
+        """
+        Log error message. Unless Logger was created with use_fatal=False, or non_fatal is passed in as True,
+        calls sys.exit(1) after logging.
+
+        :param err_msg: str or Exception to log. If it is an exception, log its name and argument.
+        :param non_fatal: bool, default False. If true, do not quit application after logging.
         """
         err_msg = err_msg if isinstance(err_msg, str) else f'{err_msg.__class__.__name__}: {err_msg}'
-        if fatal:
-            self._logger.error(err_msg)
+        self._logger.error(err_msg)
+        if self._use_fatal and not non_fatal:
             sys.exit(1)
-        else:
-            self._logger.warning(err_msg)
 
     def __logger_setup(self) -> logging.Logger:
         """
