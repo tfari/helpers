@@ -1,11 +1,11 @@
-""" Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. If notifying
-    via Tk and notifications exceed the screen's space, they get added into a queue until there is space. """
-
+"""
+Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. If notifying
+via Tk and notifications exceed the screen's space, they get added into a queue until there is space.
+"""
 import time
 import math
 import threading
 import subprocess
-
 from enum import Enum
 from tkinter import Button, Label, Tk, BOTTOM, NW, SE
 
