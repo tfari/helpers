@@ -1,5 +1,8 @@
-""" Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. """
+""" Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. If notifying
+    via Tk and notifications exceed the screen's space, they get added into a queue until there is space. """
+
 import time
+import math
 import threading
 import subprocess
 
@@ -14,7 +17,9 @@ class Icon(Enum):
 
 
 class Notifier:
-    """ Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. """
+    """ Simple Notification system using either notify-send (https://vaskovsky.net/notify-send/) or Tk. If notifying
+    via Tk and notifications exceed the screen's space, they get added into a queue until there is space. """
+
     # notify-send constants
     _NOTIFY_SEND_COMMAND = 'notify-send'
     _EXPECTED_NOTIFY_SEND_ERR = b'No summary specified.\n'
@@ -38,7 +43,12 @@ class Notifier:
         # Check if notify-send is available
         self.__using_notify_send = False if force_tk else self.__check_notify_send()
         self.__displayed_notifications = 0
-        self.__max_display_notifications = 666  # Todo: implement either this or a queue
+        if not self.__using_notify_send:
+            root = Tk()
+            width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+            self.__max_display_notifications = math.floor(height / (Notifier._TK_HEIGHT + Notifier._TK_MARGIN_VERTICAL))
+            self.__notif_queue = []
+            root.destroy()
 
     @staticmethod
     def __check_notify_send() -> bool:
@@ -84,10 +94,13 @@ class Notifier:
 
     def __notify_tk(self, title: str, msg: str, display_time: int, temporal: bool) -> None:
         """ Use Tk to display a notification. """
-        t = threading.Thread(target=self.__notify_tk_thread_target,
-                             args=(self.__displayed_notifications, title, msg, display_time, temporal))
-        t.start()
-        self.__displayed_notifications += 1
+        if self.__displayed_notifications < self.__max_display_notifications:
+            t = threading.Thread(target=self.__notify_tk_thread_target,
+                                 args=(self.__displayed_notifications, title, msg, display_time, temporal))
+            t.start()
+            self.__displayed_notifications += 1
+        else:
+            self.__notif_queue.append((title, msg, display_time, temporal))
 
     def __notify_tk_thread_target(self, notif_n: int, title: str, msg: str, display_time: int, temporal: bool) -> None:
         """
@@ -99,11 +112,6 @@ class Notifier:
         :param display_time: Seconds to display the notification if temporal is True
         :param temporal: If notification should auto-destroy after display_time seconds
         """
-        def __destroy_notification(r) -> None:
-            """ Destroy notification """
-            self.__displayed_notifications -= 1
-            r.destroy()
-
         # Create a Tk() instance
         root = Tk()
         root.config(bg=Notifier._TK_BG_COLOR)
@@ -126,7 +134,7 @@ class Notifier:
 
         if not temporal:  # pack close button if it is not  a temporal notification
             exit_button = Button(root, text='Exit', bg=Notifier._TK_BG_COLOR, fg=Notifier._TK_FG_COLOR, anchor=SE,
-                                 command=lambda: __destroy_notification(root))
+                                 command=lambda: self.__destroy_notification(root, notif_n))
             exit_button.pack(side=BOTTOM, anchor=SE)
 
         # Resize and place window on lower right corner
@@ -139,8 +147,19 @@ class Notifier:
 
         if temporal:  # Wait before destroying if it is a temporal notification
             time.sleep(display_time)
-            __destroy_notification(root)
+            self.__destroy_notification(root, notif_n)
         root.mainloop()
+
+    def __destroy_notification(self, root: Tk, notif_n: int) -> None:
+        """ Destroy notification """
+        self.__displayed_notifications -= 1
+        root.destroy()
+        if self.__notif_queue:
+            # Ugly, but it works better than calling __notify_tk inside the thread, as threads step on each other's
+            # position more easily that way.
+            t = threading.Thread(target=self.__notify_tk_thread_target,
+                                 args=(notif_n, *self.__notif_queue.pop(0)))
+            t.start()
 
     class UnexpectedNotifySendInitError(Exception):
         """ Notify send did not return the expected error on init check"""
