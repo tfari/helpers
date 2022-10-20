@@ -14,3 +14,6 @@ Collection of useful reusable helper classes / functions
 
 * [Notifier](helpers/notifier.py): Simple notification system using either [notify-send](https://vaskovsky.net/notify-send/) 
   or Tk. [TESTS](tests/test_notifier.py)
+
+* [get_file](helpers/get_file.py): Download a file using requests. Display a download bar on stdout unless told 
+  otherwise. ***Requirements***: requests.  [TESTS](tests/test_get_file.py)
