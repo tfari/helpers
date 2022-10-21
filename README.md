@@ -15,5 +15,9 @@ Collection of useful reusable helper classes / functions
 * [Notifier](helpers/notifier.py): Simple notification system using either [notify-send](https://vaskovsky.net/notify-send/) 
   or Tk. [TESTS](tests/test_notifier.py)
 
+* [TTSReader](helpers/tts_reader.py): API Wrapper for downloading (and playing) text-to-speech results out of 
+  [VoiceRSS API](https://www.voicerss.org/api/). A valid api key (free to get) is needed. ***Requirements***: requests, 
+  playsound. [TESTS](tests/test_tts_reader.py)
+
 * [get_file](helpers/get_file.py): Download a file using requests. Display a download bar on stdout unless told 
   otherwise. ***Requirements***: requests.  [TESTS](tests/test_get_file.py)
