@@ -19,5 +19,8 @@ Collection of useful reusable helper classes / functions
   [VoiceRSS API](https://www.voicerss.org/api/). A valid api key (free to get) is needed. ***Requirements***: requests, 
   playsound. [TESTS](tests/test_tts_reader.py)
 
+* [MailgunSend](helpers/mailgun_send.py): API Wrapper to send emails via [Mailgun](https://www.mailgun.com). 
+  Requires an API key, but works for trial accounts (5k mails a month). ***Requirements***: requests. [TESTS](tests/test_mailgun_send.py)
+
 * [get_file](helpers/get_file.py): Download a file using requests. Display a download bar on stdout unless told 
   otherwise. ***Requirements***: requests.  [TESTS](tests/test_get_file.py)
