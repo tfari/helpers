@@ -38,6 +38,10 @@ class TestUniqueDictHandler(TestCase):
         udh = UniqueDictHandler()
         self.assertRaises(UniqueDictHandler.InvalidValue, udh.__setitem__, 'a', 1)
 
+    def test__setitem_does_not_raise_InvalidValue_on_wrong_item_type_when_not_enforcing_type(self):
+        udh = UniqueDictHandler(enforce_data_type=False)
+        udh['a'] = 1
+
     def test__setitem__raises_RepetitionHappened_on_BREAK_on_repetition_action(self):
         udh = UniqueDictHandler(on_repetition_action=BREAK, data_type=int)
         udh['a'] = 1

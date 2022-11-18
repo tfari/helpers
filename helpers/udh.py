@@ -23,7 +23,8 @@ class UniqueDictHandler(object):
     - BREAK/"break" : Raises UniqueDictHandler.RepetitionHappened when repetitions happen, saves them.
 
     During instantiation, the keyword argument data_type can be used to set an element's type other than
-    dictionaries, specifically to use with dataclasses. This type is checked on setting new items.
+    dictionaries, specifically to use with dataclasses. This type is checked on setting new items unless
+    enforce_data_type is used. (This can serve to use UDH to map a single JSON/dict like structure).
 
     Reads and writes data to JSON. When using a special data_type, __dict__ will be used to serialize it as JSON.
 
@@ -33,14 +34,17 @@ class UniqueDictHandler(object):
     use as row values.
 
     """
-    def __init__(self, filepath: str = '', *, on_repetition_action: str = IGNORE, data_type: type = dict):
+    def __init__(self, filepath: str = '', *, on_repetition_action: str = IGNORE, data_type: type = dict,
+                 enforce_data_type: bool = True):
         """
         :param filepath: Path to use for json reading/writing
         :param on_repetition_action: How to handle repeated keys: "ignore", "notify": print a message,
             "break": raise UniqueDictHandler.RepetitionHappened
         :param data_type: Type the elements will be, dict by default.
+        :param enforce_data_type: If elements types should be enforced, True by default.
         """
         self.filepath = filepath
+        self.enforce_data_type = enforce_data_type
 
         # Check on_repetition_action is either IGNORE, NOTIFY or BREAK
         if on_repetition_action not in (IGNORE, NOTIFY, BREAK):
@@ -66,7 +70,7 @@ class UniqueDictHandler(object):
 
     @locked
     def __setitem__(self, key, item):
-        if type(item) != self.data_type:
+        if type(item) != self.data_type and self.enforce_data_type:
             raise UniqueDictHandler.InvalidValue(f'Expected: {self.data_type}, got: {type(item)} -> {repr(item)}')
 
         if self.__elements.get(key) is not None:
