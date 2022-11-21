@@ -137,6 +137,11 @@ class UniqueDictHandler(object):
         return iter(list(self.__elements.values()))
 
     @locked
+    def get(self, key):
+        """ Get key in elements """
+        return self.__elements.get(key)
+
+    @locked
     def get_repeated(self) -> dict:
         """ Get the repeated elements """
         return self.__repeated_elements

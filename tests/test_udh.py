@@ -58,6 +58,12 @@ class TestUniqueDictHandler(TestCase):
         udh['a'] = 2
         self.assertEqual(2, udh['a'])
 
+    def test_get(self):
+        udh = UniqueDictHandler(data_type=int)
+        udh['a'] = 1
+        self.assertEqual(1, udh.get('a'))
+        self.assertEqual(None, udh.get('b'))
+
     def test__repr__(self):
         udh = UniqueDictHandler(data_type=int)
         udh['a'], udh['a'] = 1, 2
