@@ -1,9 +1,16 @@
 """ Tests for TTSReader. Some tests should be checked by hand (the ones that check reading). """
 import os
-from unittest import TestCase, mock
+import json
+from unittest import TestCase
 from helpers.tts_reader import TTSReader
 
-API_KEY = ''  # Set this before testing.
+# Set this before testing, or use a _keys_for_test.json file: {"test_tts_reader": {"api_key": API_KEY}}
+API_KEY = ''
+
+SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
+if os.path.exists(f'{SCRIPT_PATH}/_keys_for_tests.json'):
+    with open(f'{SCRIPT_PATH}/_keys_for_tests.json', 'r', encoding='utf-8') as r_file:
+        API_KEY = json.load(r_file)['test_tts_reader']['api_key']
 
 class TestTTSReader(TestCase):
     def test_download_raises_TextTooLong(self):
@@ -35,7 +42,7 @@ class TestTTSReader(TestCase):
 
     def test_download_and_read(self):
         t = TTSReader(api_key=API_KEY)
-        t.download_and_read('Test download and read.', filepath='test')
+        t.download_and_read('Test download and read passed.', filepath='test')
         self.assertFalse(os.path.exists('test.wav'))
 
     def test_download_and_read_non_delete_after_read(self):
