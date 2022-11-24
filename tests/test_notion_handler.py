@@ -43,7 +43,8 @@ class TestNotionHandler(TestCase):
     def setUpClass(cls) -> None:
         """ Instantiate NotionHandler """
         cls.nh = NotionHandler(TOKEN, VERSION)
-        cls.db_row_testing = cls.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}row_testing_db')
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}row_testing_db', 'link': None}}]
+        cls.db_row_testing = cls.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj)
         cls._created_objs_list = [cls.db_row_testing]
 
     @classmethod
@@ -251,6 +252,7 @@ class TestNotionHandler(TestCase):
 
     def test_post_db(self):
         expected_prop = {'Name': {'id': 'title', 'name': 'Name', 'type': 'title', 'title': {}}}
+        # title_prop = ['rich_text': {'text': {'content': {}}}]
         # 1 - No properties, no title, not is_inlined
         db = self.nh.post_db(INIT_TEST_PAGE_ID)
         self._created_objs_list.append(db)
@@ -261,7 +263,8 @@ class TestNotionHandler(TestCase):
 
         # 2 - Title, not is_inlined
         expected_title = f'{TEST_TIME}_test_post_db_w_title'
-        db2 = self.nh.post_db(INIT_TEST_PAGE_ID, is_inline=False, title_name=expected_title)
+        title_obj = [{'type': 'text', 'text': {'content': expected_title, 'link': None}}]
+        db2 = self.nh.post_db(INIT_TEST_PAGE_ID, is_inline=False, title_rich_texts=title_obj)
         self._created_objs_list.append(db2)
 
         self.assertFalse(db2['is_inline'])
@@ -280,7 +283,8 @@ class TestNotionHandler(TestCase):
         self.assertRaises(NotionHandler.ParentNotFound, self.nh.post_db, WRONG_UID)
 
     def test_get_db(self):
-        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}_test_get_db_pre_posting')
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}_test_get_db_pre_posting', 'link': None}}]
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj)
         self._created_objs_list.append(db)
         self.assertEqual(db, self.nh.get_db(db['id']))
 
@@ -289,7 +293,8 @@ class TestNotionHandler(TestCase):
 
     def test_query_db(self):
         # Set up
-        query_db = self.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}_query_db_tests')
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}_query_db_tests', 'link': None}}]
+        query_db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj)
         self._created_objs_list.append(query_db)
 
         for i in range(0, 11):
@@ -314,7 +319,8 @@ class TestNotionHandler(TestCase):
         self.assertRaises(NotionHandler.ObjectNotFound, self.nh.query_db, WRONG_UID)
 
     def test_update_db_properties(self):
-        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}test_update_db_properties', is_inline=False)
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}test_update_db_properties', 'link': None}}]
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj, is_inline=False)
         self._created_objs_list.append(db)
 
         # 1 - No changes
@@ -327,7 +333,8 @@ class TestNotionHandler(TestCase):
 
         # 3 - Edit title
         new_title = f'{TEST_TIME}test_update_db_properties_new_title'
-        db4 = self.nh.update_db_properties(db['id'], new_title=new_title)
+        new_title_obj = [{'type': 'text', 'text': {'content': new_title, 'link': None}}]
+        db4 = self.nh.update_db_properties(db['id'], title_rich_texts=new_title_obj)
         self.assertEqual(new_title, db4['title'][0]['text']['content'])
 
         # 4 - Add properties
@@ -347,14 +354,17 @@ class TestNotionHandler(TestCase):
         self.assertRaises(NotionHandler.ObjectNotFound, self.nh.update_db_properties, INIT_TEST_PAGE_ID)
 
     def test_update_db_properties_raises_ValidationError(self):
-        db = self.nh.post_db(INIT_TEST_PAGE_ID,
-                             title_name=f'{TEST_TIME}test_update_db_properties_raises_ValidationError')
+        title_name = f'{TEST_TIME}test_update_db_properties_raises_ValidationError'
+        title_obj = [{'type': 'text', 'text': {'content': title_name, 'link': None}}]
+
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj)
         self._created_objs_list.append(db)
         self.assertRaises(NotionHandler.ValidationError, self.nh.update_db_properties, db['id'],
                           properties={'Name': None})
 
     def test_trash_recover_db(self):
-        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}_test_recover_db')
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}_test_recover_db', 'link': None}}]
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj)
         self._created_objs_list.append(db)
         trash_response = self.nh.trash_db(db['id'])
         self.assertTrue(trash_response['archived'])
@@ -422,7 +432,8 @@ class TestNotionHandler(TestCase):
         self.assertRaises(NotionHandler.ObjectNotFound, self.nh.recover_row_db, WRONG_UID)
 
     def test_get_row_db_property_item(self):
-        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_name=f'{TEST_TIME}_test_get_row_db_property_item',
+        title_obj = [{'type': 'text', 'text': {'content': f'{TEST_TIME}_test_get_row_db_property_item', 'link': None}}]
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, title_rich_texts=title_obj,
                              properties={'Name': {'title': {}}, 'Number': {'number': {}}})
         self._created_objs_list.append(db)
 

@@ -383,7 +383,7 @@ class NotionHandler:
         return self.api_request(NotionHandler._GET_DATABASE.format(database_id), HTTPMethod.GET)
 
     def post_db(self, parent_page_id: str, properties: dict = None, *,
-                title_name: str = None, is_inline: bool = True) -> dict:
+                title_rich_texts: list = None, is_inline: bool = True) -> dict:
         """ Create a database, inlined by default.
 
         If no properties are provided, the db will be created with an empty Name property.
@@ -400,15 +400,15 @@ class NotionHandler:
             'is_inline': is_inline
         }
 
-        if title_name:
-            post_db_data['title'] = [{'type': 'text', 'text': {'content': title_name, 'link': None}}]
+        if title_rich_texts:
+            post_db_data['title'] = title_rich_texts
 
         try:
             return self.api_request(NotionHandler._POST_DATABASE, HTTPMethod.POST, data=post_db_data)
         except NotionHandler.ObjectNotFound as e:
             raise NotionHandler.ParentNotFound(e)
 
-    def update_db_properties(self, database_id: str, new_title: str = None, properties: dict = None,
+    def update_db_properties(self, database_id: str, title_rich_texts: list = None, properties: dict = None,
                              is_inline: bool = None) -> dict:
         """ Update a database's properties
 
@@ -419,8 +419,8 @@ class NotionHandler:
         :raises NotionHandler.ValidationError:
         """
         update_db_data = {}
-        if new_title:
-            update_db_data['title'] = [{'type': 'text', 'text': {'content': new_title, 'link': None}}]
+        if title_rich_texts:
+            update_db_data['title'] = title_rich_texts
         if properties:
             update_db_data['properties'] = properties
         if is_inline:
