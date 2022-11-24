@@ -1,6 +1,9 @@
 # helpers
 
-Collection of useful reusable helper classes / functions
+Collection of useful  helper classes / functions
+
+* [NotionHandler](helpers/notion_handler.py): API wrapper for handling private Notion integrations. ***Requirements***: 
+  requests. [TESTS](tests/test_notion_handler.py)
 
 * [UniqueDictHandler](helpers/udh.py): Thread-locked dictionary handler that 
   does not allow, and records, repeated key assignations. Reads and writes data to JSON, and implements a CSV output 
