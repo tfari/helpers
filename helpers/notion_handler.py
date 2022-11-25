@@ -633,10 +633,32 @@ class NotionHandler:
         """
         return self.api_request(NotionHandler._DELETE_BLOCK.format(block_id), HTTPMethod.DELETE)
 
+    @staticmethod
+    def validate_db_property_structure(db: dict, expected_structure: dict[str, str]) -> None:
+        """ Check a Notion database contains in its properties the property names and types in expected_structure.
+
+        :param db: dict, database object as returned by a Notion API call
+        :param expected_structure: dict[str, str] mapping property Names to types
+        :raises NotionHandler.InvalidDBPropertyStructure: if a property is not present or has the wrong type
+        """
+
+        for property_name, property_type in expected_structure.items():
+            if db['properties'].get(property_name) is not None:
+                if db['properties'][property_name]['type'] != property_type:
+                    raise NotionHandler.InvalidDBPropertyStructure(
+                        f'InvalidDBPropertyStructure: Column "{property_name}" was expected to be of type: '
+                        f'"{property_type}" but instead was: "{db["properties"][property_name]["type"]}')
+            else:
+                raise NotionHandler.InvalidDBPropertyStructure(
+                    f'InvalidDBPropertyStructure: Column "{property_name}" does not exist in the database.')
+
     # Exceptions
 
     class NotionHandlerError(Exception):
         """ Base exception """
+
+    class InvalidDBPropertyStructure(NotionHandlerError):
+        """ DB validation failed """
 
     class GeneralRequestError(NotionHandlerError):
         """ Error for APICalls """

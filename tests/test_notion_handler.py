@@ -519,3 +519,18 @@ class TestNotionHandler(TestCase):
 
     def test_delete_block_endpoint_ObjectNotFound(self):
         self.assertRaises(NotionHandler.ObjectNotFound, self.nh.delete_block_endpoint, WRONG_UID)
+
+    def test_validate_db_property_structure(self):
+        db = self.nh.post_db(INIT_TEST_PAGE_ID, properties={'Name': {'title': {}}, 'Number': {'number': {}}})
+        self._created_objs_list.append(db)
+
+        valid_check = {'Name': 'title', 'Number': 'number'}
+        self.nh.validate_db_property_structure(db, valid_check)
+
+        invalid_check_wrong_type = {'Name': 'title', 'Number': 'select'}
+        self.assertRaises(NotionHandler.InvalidDBPropertyStructure,
+                          self.nh.validate_db_property_structure, db, invalid_check_wrong_type)
+
+        invalid_check_missing_property = {'Name': 'title', 'Number': 'number', 'Select': 'select'}
+        self.assertRaises(NotionHandler.InvalidDBPropertyStructure,
+                          self.nh.validate_db_property_structure, db, invalid_check_missing_property)
